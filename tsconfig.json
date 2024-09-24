@@ -1,0 +1,46 @@
+{
+    "$schema": "https://json.schemastore.org/tsconfig",
+    "compilerOptions": {
+      "emitDecoratorMetadata": true,
+      "experimentalDecorators": true,
+      "skipLibCheck": true,
+      "strict": true,
+      "target": "ES2022",
+      "module": "ES2022",
+      "rootDir": "./src",
+      "moduleResolution": "Node",
+      "resolveJsonModule": true,
+      "allowSyntheticDefaultImports": true,
+      "esModuleInterop": true,
+      "allowJs": false,
+      "forceConsistentCasingInFileNames": true,
+      "importHelpers": true,
+      "alwaysStrict": true,
+      "sourceMap": true,
+      "noFallthroughCasesInSwitch": true,
+      "noImplicitReturns": true,
+      "noUnusedLocals": true,
+      "noUnusedParameters": true,
+      "noImplicitAny": false,
+      "noImplicitThis": false,
+      "strictNullChecks": false,
+      "outDir": "./dist",
+      "baseUrl": "./src",
+      "paths": {
+        "@Config/*": ["app/configs/*"],
+        "@Constants/*": ["app/constants/*"],
+        "@Controller/*": ["controllers/*"],
+        "@Middleware/*": ["middlewares/*"],
+        "@Routes/*": ["routes/*"],
+        "@Interface/*": ["interfaces/*"],
+        "@Utilities/*": ["app/utilities/*"],
+        "@Services/*": ["services/*"]
+      }
+    },
+    "include": ["src/**/**/*", "__tests__/**/*"],
+    "exclude": ["node_modules", "build"],
+    "tsc-alias": {
+      "verbose": true,
+      "resolveFullPaths": true
+    }
+}
