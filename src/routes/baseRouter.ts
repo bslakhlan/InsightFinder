@@ -5,7 +5,6 @@ import { Router } from "express";
 
 const router = Router();
 router.get(baseSubRoutes.printLogs, baseController.printBasicLogs);
-console.log("Configuring baseRouter");
 
 router.post('/insights',baseController.getInsights);
 // router.post(baseAPIRoute, async (req, res, next) => {

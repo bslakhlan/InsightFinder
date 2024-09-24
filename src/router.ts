@@ -8,5 +8,3 @@ export const RouterPaths = [
         router: baseServiceRouter,
     },
 ];
-
-console.log("RouterPaths configured:", RouterPaths);

@@ -14,16 +14,18 @@ class BaseController {
   }
 
   public async getInsights(req: Request, res: Response):Promise<Response>{
-    console.log("Inside the get insights function");
-    console.log("Inside the get insights function");
-    console.log("Inside the get insights function");
     const {customerOrgDomain, prospectOrgDomain} = req.body;
     try{
       const insights = await insightsService.getInsights(customerOrgDomain,prospectOrgDomain);
-      Log.info(insights,'Final insights: ...');
+      Log.info(insights,'Final insights: ');
       return res.json(insights);
     }catch(error:any){
-      throw new Error(`Error finding insights : ${customerOrgDomain}, ${prospectOrgDomain} - ${error.message}`);
+      Log.error(error,"Error finding insights...");
+      return res.status(500).json({
+        error: "Internal Server Error",
+        message: `Error finding insights for customer: ${customerOrgDomain}, prospect: ${prospectOrgDomain}`,
+        details: error.message
+      });
     }
   }
 }

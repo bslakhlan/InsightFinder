@@ -23,6 +23,7 @@ export class OpenAIService implements LLMService {
 
   async findRelativeDataPoints(customer_organization_info:any, customer_products_info: any,data_points:any, product_value_analysis:any) {
     const prompt = relativeDataPointsPrompt(customer_organization_info, customer_products_info,data_points, product_value_analysis);
+    Log.infoWithChannel('prompts',prompt,"prompt for relativeDataPoints");
     try {
       const response = await makeApiCall({
         method: 'post',
@@ -52,7 +53,7 @@ export class OpenAIService implements LLMService {
   }
   async findPitchInsights(customer_organization_info: any , customer_products_info:any , propect_organization_info:any , relative_data_points:any ) {
     const prompt = pitchInsightsPrompt(customer_organization_info,customer_products_info,propect_organization_info, relative_data_points);
-
+    Log.infoWithChannel('prompts',prompt,"prompt for findPitchInsights");
     try {
       const response = await makeApiCall({
         method: 'post',
@@ -91,7 +92,7 @@ export class OpenAIService implements LLMService {
 
   async analyzeProductsData(data: any): Promise<string> {
     const prompt = analyzeProductsprompt(JSON.stringify(data));
-
+    Log.infoWithChannel('prompts',prompt,"prompt for analyzeProductsData");
     try {
       const response = await makeApiCall({
         method: 'post',
@@ -119,8 +120,10 @@ export class OpenAIService implements LLMService {
       throw error;
     }
   }
+
   async rateInsights(prospect_organization_info:any, product_value_analysis:any, relative_data_points:any, generated_insights:any): Promise<string> {
-    const prompt = insightRatingPrompt(prospect_organization_info, product_value_analysis, relative_data_points,generated_insights);
+    const prompt = insightRatingPrompt(prospect_organization_info, product_value_analysis, relative_data_points,generated_insights)
+    Log.infoWithChannel('prompts',prompt,"prompt for rateInsights");
     try {
       const response = await makeApiCall({
         method: 'post',

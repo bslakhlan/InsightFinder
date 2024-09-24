@@ -1,144 +1,97 @@
-import makeApiCall from "@Utilities/apiUtils";
+import { getApiCalltoScout, postApiCalltoScout } from "@Utilities/scoutUtils";
 import { Log } from "index";
 class ScoutService{
     async getProductsData(url: string) {
+
         //Get products data from scout
-        console.log("Getting req id for url : ",url)
+        Log.info(url,"Getting req id for url : ")
         const payload = {
             url:url,
             force_refresh:false,
         }
-        const response = await makeApiCall({
-            method: 'post',
-            url:'http://206.189.132.177:3000/api/request',
-            payload: payload,
-            maxRedirects: 0,
-            validateStatus: (status) => status >= 200 && status < 400
-        });
-        Log.infoWithChannel('SQS',response,"response from Scout");
-        const request_id = response.data.request_id;
-        
-        console.log("request id: ", request_id);
-        const response_data =await makeApiCall({
-            method: 'get',
-            url:`http://206.189.132.177:3000/api/request/${request_id}`,
-            maxRedirects: 0,
-            validateStatus: (status) => status >= 200 && status < 400
-        });
-        let customer_organization_info ;
+        let response = await postApiCalltoScout(payload);
+        const request_id = response.request_id;
+        Log.info(request_id,"request id: ");
 
-        // Check if analysis is complete
-        if (response_data.data.analysis_result.is_product_analysis_complete) {
-            Log.info(response_data.data,'Analysis Found');
-            customer_organization_info = response_data.data.analysis_result;
+        response = await getApiCalltoScout(request_id);
+        let customer_organization_info ;
+        if (response.analysis_result.is_product_analysis_complete) {
+            customer_organization_info = response.analysis_result;
         } else {
-            // Handle waiting for analysis to complete
-            console.log('Retryin because analysis not complete');
-            Log.info('Analysis is not complete, waiting...');
-            let retries = 5; // Number of retries
-            let waitTime = 15000; // Wait time in milliseconds
+            Log.info('Analysis is not complete, retrying...');
+            let retries = 5; 
+            let waitTime = 15000; 
 
             while (retries > 0) {
-                await new Promise(resolve => setTimeout(resolve, waitTime)); // Wait
+                await new Promise(resolve => setTimeout(resolve, waitTime)); 
                 // Retry the request
-                const retry_response_data = await makeApiCall({
-                    method: 'get',
-                    url: `http://206.189.132.177:3000/api/request/${request_id}`,
-                    payload: payload,
-                    maxRedirects: 0,
-                    validateStatus: (status) => status >= 200 && status < 400,
-                });
+                const retry_response_data = await getApiCalltoScout(request_id);
 
-                if (retry_response_data.data.analysis_result.is_product_analysis_complete) {
-                    Log.info(retry_response_data.data,'Analysis Found');
-                    customer_organization_info = retry_response_data.data.analysis_result;
-                    break; // Exit loop if analysis is complete
+                if (retry_response_data.analysis_result.is_product_analysis_complete) {
+                    customer_organization_info = retry_response_data.analysis_result;
+                    break; 
                 }
 
-                retries--; // Decrement retries
+                retries--; 
                 Log.info(`Retrying... ${retries} attempts left.`);
             }
 
             if (retries === 0) {
-                console.log('Product Analysis did not complete in time.');
-                return {};
+                Log.error('Product Analysis did not complete in time.');
+                throw new Error("Could not fetch products from scout in time");
             }
         }
         const customer_products_info = customer_organization_info.products;
-        Log.info(customer_products_info,'Scout products info...');
+        Log.infoWithChannel('scout',customer_products_info,'Scout products info...');
+
         if(customer_organization_info.analysis_result == 'success'){
             return [customer_organization_info,customer_products_info];
         }
         else{
             Log.error('Scout analysis resulted in failure');
-            return {};
+            throw new Error("Scout analysis resulted in failure");
         }
     }
 
     async getOrganizationData(url: string) {
-        //Get products data from scout
-        console.log("Getting req id for url : ",url)
+        Log.info(url,"Getting req id for url : ");
         const payload = {
             url:url,
             force_refresh:false,
         }
-        
-        const response = await makeApiCall({
-            method: 'post',
-            url:'http://206.189.132.177:3000/api/request',
-            payload: payload,
-            maxRedirects: 0,
-            validateStatus: (status) => status >= 200 && status < 400
-        });
-        Log.infoWithChannel('SQS',response,"response from Scout");
-        const request_id = response.data.request_id;
-        
-        console.log("request id: ", request_id);
+        const response = await postApiCalltoScout(payload);
+        const request_id = response.request_id;
+        Log.info(request_id,"request id: ");
 
-        const response_data =await makeApiCall({
-            method: 'get',
-            url:`http://206.189.132.177:3000/api/request/${request_id}`,
-            payload: payload,
-            maxRedirects: 0,
-            validateStatus: (status) => status >= 200 && status < 400,
-        });
+        const response_data =await getApiCalltoScout(request_id);
 
         let customer_organization_info ;
-        // Check if analysis is complete
-        if (response_data.data.analysis_result.is_analysis_complete) {
-            customer_organization_info = response_data.data.analysis_result;
+
+        if (response_data.analysis_result.is_analysis_complete) {
+            customer_organization_info = response_data.analysis_result;
         } else {
-            // Handle waiting for analysis to complete
-            Log.info('Analysis is not complete, waiting...');
-            let retries = 5; // Number of retries
-            let waitTime = 15000; // Wait time in milliseconds
+            Log.info('Scout Analysis is not yet complete, waiting...');
+            let retries = 5; 
+            let waitTime = 15000; 
             while (retries > 0) {
-                await new Promise(resolve => setTimeout(resolve, waitTime)); // Wait
+                await new Promise(resolve => setTimeout(resolve, waitTime)); 
 
-                // Retry the request
-                const retry_response_data = await makeApiCall({
-                    method: 'get',
-                    url: `http://206.189.132.177:3000/api/request/${request_id}`,
-                    payload: payload,
-                    maxRedirects: 0,
-                    validateStatus: (status) => status >= 200 && status < 400,
-                });
+                const retry_response_data = await getApiCalltoScout(request_id);
 
-                if (retry_response_data.data.analysis_result.is_analysis_complete) {
-                    customer_organization_info = retry_response_data.data.analysis_result;
-                    break; // Exit loop if analysis is complete
+                if (retry_response_data.analysis_result.is_analysis_complete) {
+                    customer_organization_info = retry_response_data.analysis_result;
+                    break; 
                 }
 
-                retries--; // Decrement retries
+                retries--;
                 Log.info(`Retrying... ${retries} attempts left.`);
             }
 
             if (retries === 0) {
-                console.log('Analysis did not complete in time.');
-                return {};
+                Log.error('Scout analysis resulted in failure');
+                throw new Error("Scout analysis resulted in failure");
             }
         }
-
         return customer_organization_info;
     }
 }

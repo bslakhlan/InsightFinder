@@ -10,7 +10,6 @@ const formatTime = () => {
 };
 
 const LogAllIncomingRoutes = (req: Request, res: Response, next: NextFunction) => {
-  console.log(`Accessing route: ${req.method} ${req.path}`);
   const start = new Date().getTime();
   console.log(
     chalk.bold(

@@ -73,14 +73,12 @@ class ServerSetupConfig {
   }
 
   loadApp(extraArgs: { rateLimiter: RateLimitRequestHandler; httpLogger: HttpLogger; }) {
-    console.log("Starting to load app...");
     this.app.use(extraArgs.httpLogger);
     this.app.use(extraArgs.rateLimiter);
     this.app.use(cors({ credentials: true, origin: "*" }));
     this.app.use(json());
     this.app.use(LogAllIncomingRoutes);
 
-    console.log("Registering routes:");
     RouterPaths.sort((a, b) => a.order - b.order).map(({ route, router }) => this.app.use(route, router));
     this.writeLines({}, true);
     this.app.use("/", (_, res) => res.sendStatus(200));
